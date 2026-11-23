@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarkPDF Studio — Beautiful Markdown to PDF</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+  
+  <!-- Highlight.js for Code Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="hljs-theme">
+  
+  <!-- KaTeX for Math Equations -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Marked, Highlight.js, KaTeX & Mermaid -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+  <style id="dynamicPrintStyle"></style>
+</head>
+<body class="theme-modern">
+  <div class="app-shell">
+  <!-- Top Navigation Bar -->
+  <header class="app-header no-print">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-icon">
+          <i data-lucide="file-text"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">MarkPDF</span>
+          <span class="logo-badge">Studio</span>
+        </div>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Template Picker -->
+      <div class="header-item">
+        <label for="templateSelect" class="sr-only">Template</label>
+        <select id="templateSelect" class="btn-select" title="Load sample template">
+          <option value="" disabled selected>Templates...</option>
+          <option value="tech-spec">Tech Specification</option>
+          <option value="api-diagrams">API Flow Diagrams (Mermaid)</option>
+          <option value="proposal">Executive Proposal</option>
+          <option value="resume">Modern Resume</option>
+          <option value="meeting">Meeting Minutes</option>
+        </select>
+      </div>
+
+      <!-- Always-visible Layout Toggle -->
+      <div class="segmented" role="group" aria-label="Workspace layout">
+        <button type="button" class="seg-btn" data-layout="editor" title="Editor only"><i data-lucide="panel-left"></i></button>
+        <button type="button" class="seg-btn active" data-layout="split" title="Split view"><i data-lucide="columns-2"></i></button>
+        <button type="button" class="seg-btn" data-layout="preview" title="Preview only"><i data-lucide="panel-right"></i></button>
+      </div>
+    </div>
+
+    <!-- Center Controls: Theme & Format Settings -->
+    <div class="header-center">
+      <div class="header-item">
+        <label for="themeSelect" class="item-label" title="Document theme"><i data-lucide="palette"></i><span>Theme</span></label>
+        <select id="themeSelect" class="btn-select" title="Document theme">
+          <option value="theme-modern">Modern (ChatGPT)</option>
+          <option value="theme-dark">Dark Slate</option>
+          <option value="theme-executive">Executive</option>
+          <option value="theme-academic">Academic</option>
+          <option value="theme-minimal">Minimalist</option>
+        </select>
+        <button type="button" id="quickDarkToggle" class="btn btn-secondary btn-icon-only" title="Toggle Dark Slate theme for preview &amp; PDF">
+          <i data-lucide="moon"></i>
+        </button>
+      </div>
+
+      <div class="header-item">
+        <label for="pageSizeSelect" class="item-label" title="Paper size"><i data-lucide="file"></i><span>Size</span></label>
+        <select id="pageSizeSelect" class="btn-select" title="Paper size">
+          <option value="a4">A4</option>
+          <option value="letter">US Letter</option>
+        </select>
+      </div>
+
+      <div class="header-item">
+        <label for="marginsSelect" class="item-label" title="Page margins"><i data-lucide="maximize-2"></i><span>Margins</span></label>
+        <select id="marginsSelect" class="btn-select" title="Page margins">
+          <option value="margin-normal">Standard</option>
+          <option value="margin-compact">Compact</option>
+          <option value="margin-relaxed">Spacious</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Right Controls: Action Buttons -->
+    <div class="header-right">
+      <button id="importBtn" class="btn btn-secondary btn-compact" title="Import Markdown file (.md, .txt)">
+        <i data-lucide="upload"></i>
+        <span class="hide-md">Import</span>
+      </button>
+      <input type="file" id="fileInput" accept=".md,.markdown,.txt" style="display: none;">
+
+      <button id="exportMdBtn" class="btn btn-secondary btn-compact" title="Download Markdown source (.md)">
+        <i data-lucide="download"></i>
+        <span class="hide-md">.md</span>
+      </button>
+
+      <button id="printBtn" class="btn btn-secondary btn-compact" title="Print / Save as vector PDF (Ctrl+P)">
+        <i data-lucide="printer"></i>
+        <span>Print</span>
+      </button>
+
+      <button id="downloadPdfBtn" class="btn btn-primary" title="Download PDF file directly (Ctrl+S)">
+        <i data-lucide="file-down"></i>
+        <span>Download PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Split Studio Workspace -->
+  <main class="studio-workspace layout-split">
+    <!-- Left: Markdown Editor Column -->
+    <section class="editor-pane no-print">
+      <!-- Editor Action Toolbar -->
+      <div class="editor-toolbar">
+        <div class="toolbar-actions">
+          <button type="button" class="tool-btn" data-action="h1" title="Heading 1"><i data-lucide="heading-1"></i></button>
+          <button type="button" class="tool-btn" data-action="h2" title="Heading 2"><i data-lucide="heading-2"></i></button>
+          <button type="button" class="tool-btn" data-action="bold" title="Bold (Ctrl+B)"><i data-lucide="bold"></i></button>
+          <button type="button" class="tool-btn" data-action="italic" title="Italic (Ctrl+I)"><i data-lucide="italic"></i></button>
+          
+          <div class="toolbar-separator"></div>
+          
+          <!-- Code Inserter Dropdown -->
+          <div class="code-insert-dropdown">
+            <button type="button" class="tool-btn" id="codeDropdownBtn" title="Insert Code Block">
+              <i data-lucide="code-2"></i>
+              <span class="btn-label-sm">Code</span>
+              <i data-lucide="chevron-down" style="width:11px;height:11px;margin-left:2px;"></i>
+            </button>
+            <div class="dropdown-menu" id="codeDropdownMenu">
+              <button type="button" class="dropdown-item" data-code="js">
+                <span class="lang-dot dot-js"></span> JavaScript / TypeScript
+              </button>
+              <button type="button" class="dropdown-item" data-code="json">
+                <span class="lang-dot dot-json"></span> JSON Payload
+              </button>
+              <button type="button" class="dropdown-item" data-code="bash">
+                <span class="lang-dot dot-bash"></span> Terminal / Shell ($)
+              </button>
+              <button type="button" class="dropdown-item" data-code="sql">
+                <span class="lang-dot dot-sql"></span> SQL Query
+              </button>
+              <button type="button" class="dropdown-item" data-code="python">
+                <span class="lang-dot dot-py"></span> Python
+              </button>
+              <button type="button" class="dropdown-item" data-code="mermaid">
+                <span class="lang-dot dot-mermaid"></span> Mermaid Diagram
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="tool-btn" data-action="table" title="Insert Table"><i data-lucide="table"></i></button>
+          <button type="button" class="tool-btn" data-action="quote" title="Blockquote"><i data-lucide="quote"></i></button>
+          <button type="button" class="tool-btn" data-action="callout" title="Callout Box"><i data-lucide="info"></i></button>
+          <button type="button" class="tool-btn" data-action="pagebreak" title="Insert Page Break"><i data-lucide="scissors"></i></button>
+        </div>
+
+        <div class="stats-badge">
+          <span id="wordCount">0 words</span>
+          <span class="stats-dot">&bull;</span>
+          <span id="charCount">0 chars</span>
+        </div>
+      </div>
+
+      <!-- Textarea Editor -->
+      <div class="editor-container">
+        <textarea id="markdownInput" spellcheck="false" placeholder="Type or paste your Markdown here..."></textarea>
+      </div>
+
+      <div class="editor-footer">
+        <span class="status-indicator">
+          <span class="pulse-dot"></span> Autosaved locally
+        </span>
+        <button id="clearBtn" class="link-btn" title="Clear editor contents">Reset editor</button>
+      </div>
+    </section>
+
+    <!-- Draggable Divider (drag left/right, double-click to reset) -->
+    <div class="pane-resizer no-print" id="paneResizer" title="Drag to resize • Double-click to reset">
+      <div class="resizer-grip"></div>
+    </div>
+
+    <!-- Right: Rendered Sheet Preview Column -->
+    <section class="preview-pane">
+      <div class="preview-toolbar no-print">
+        <div class="preview-title">
+          <i data-lucide="eye"></i>
+          <span>Live Document Preview</span>
+        </div>
+        <div class="preview-controls">
+          <!-- Zoom Controls -->
+          <div class="segmented" role="group" aria-label="Zoom">
+            <button type="button" class="seg-btn" id="zoomOutBtn" title="Zoom out"><i data-lucide="zoom-out"></i></button>
+            <button type="button" class="seg-btn seg-text active" id="zoomFitBtn" title="Fit page to width">Fit</button>
+            <button type="button" class="seg-btn" id="zoomInBtn" title="Zoom in"><i data-lucide="zoom-in"></i></button>
+          </div>
+
+          <div class="page-count-badge" id="pageCountBadge">
+            <i data-lucide="layers"></i>
+            <span id="pageCountText">1 Page</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-scroll-wrapper" id="previewScrollWrapper">
+        <!-- Rendered Multi-Sheet Document Container -->
+        <div id="documentContainer" class="document-container page-a4 margin-normal">
+          <!-- Multi-page sheets are injected dynamically here -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Quick Floating Download Button (for narrow screens) -->
+  <button id="floatingPrintBtn" class="floating-fab no-print" title="Download PDF">
+    <i data-lucide="file-down"></i>
+  </button>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast no-print"></div>
+  </div>
+
+  <!-- Off-screen sandbox for Mermaid rendering (isolated from app layout) -->
+  <div id="mermaidSandbox" aria-hidden="true"></div>
+
+  <!-- html2pdf.js for direct PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="templates.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
