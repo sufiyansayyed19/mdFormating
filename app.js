@@ -133,6 +133,31 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/'/g, '&#039;');
   }
 
+  // Refine Highlight.js tokens to match VS Code Dark+ (control keywords in purple #c586c0, types/classes in teal #4ec9b0)
+  const VSCODE_CONTROL_KEYWORDS = new Set([
+    'from', 'import', 'as', 'if', 'elif', 'else', 'for', 'while', 'do',
+    'return', 'yield', 'raise', 'throw', 'try', 'except', 'catch', 'finally',
+    'with', 'pass', 'break', 'continue', 'await', 'async', 'export', 'default',
+    'switch', 'case', 'not', 'or', 'and', 'assert'
+  ]);
+
+  function applyVsCodeTokenRefinements(html) {
+    // 1. Split control-flow keywords (#c586c0) from declaration keywords (#569cd6)
+    let refined = html.replace(
+      /<span class="hljs-keyword">([a-zA-Z_]+)<\/span>/g,
+      (full, kw) => VSCODE_CONTROL_KEYWORDS.has(kw) ? `<span class="hljs-kw-control">${kw}</span>` : full
+    );
+
+    // 2. Highlight un-wrapped PascalCase classes/types & builtin type hints in teal (#4ec9b0),
+    //    skipping any existing <span ...>...</span> tokens (strings, comments, etc.)
+    refined = refined.replace(
+      /(<span\b[^>]*>[\s\S]*?<\/span>)|\b([A-Z][a-zA-Z0-9_]*[a-z][a-zA-Z0-9_]*|UUID|str|int|float|bool|dict|list|tuple|set|bytes|datetime|Callable|Any|Optional|Union|Literal)\b/g,
+      (match, existingSpan, typeName) => existingSpan ? existingSpan : `<span class="hljs-type">${typeName}</span>`
+    );
+
+    return refined;
+  }
+
   // Configure Custom Marked Renderer (Mermaid Diagrams + ChatGPT Code Blocks)
   const renderer = new marked.Renderer();
 
@@ -172,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         highlighted = escapeHtml(codeText);
       }
+      highlighted = applyVsCodeTokenRefinements(highlighted);
     } catch (err) {
       console.warn('Highlight.js notice:', err);
       highlighted = escapeHtml(codeText);

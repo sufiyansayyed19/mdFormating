@@ -19,7 +19,7 @@
 
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: Consolas, "Cascadia Code", "Fira Code", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
   --font-serif: 'Merriweather', Georgia, serif;
 }
 
@@ -761,14 +761,15 @@ body.is-resizing textarea {
 }
 
 /* ========================================================
-   CODE BLOCKS (ChatGPT Style: Clean Header + Monospace)
+   CODE BLOCKS (VS Code Dark+ / Dark Modern Palette & Surface)
    ======================================================== */
 
 .code-block-wrapper {
   margin: 1.25em 0;
-  background-color: #0d0d0d;
+  background-color: #1e1e1e;
   border-radius: 8px;
-  border: 1px solid #262626;
+  border: 1px solid #333333;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
   overflow: hidden;
   break-inside: avoid;
   page-break-inside: avoid;
@@ -779,8 +780,8 @@ body.is-resizing textarea {
   align-items: center;
   justify-content: space-between;
   padding: 0.42rem 0.9rem;
-  background-color: #2f2f2f;
-  border-bottom: 1px solid #3c3c3c;
+  background-color: #252526;
+  border-bottom: 1px solid #333333;
   user-select: none;
 }
 
@@ -794,7 +795,7 @@ body.is-resizing textarea {
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 500;
-  color: #b4b4b4;
+  color: #cccccc;
   text-transform: lowercase;
   letter-spacing: 0.01em;
 }
@@ -807,7 +808,7 @@ body.is-resizing textarea {
 .copy-code-btn {
   background: none;
   border: none;
-  color: #b4b4b4;
+  color: #cccccc;
   font-family: var(--font-sans);
   font-size: 0.74rem;
   font-weight: 500;
@@ -834,21 +835,94 @@ body.is-resizing textarea {
 .code-block-wrapper pre {
   margin: 0 !important;
   padding: 1rem 1.15rem !important;
-  background-color: #0d0d0d !important;
+  background-color: #1e1e1e !important;
   border-radius: 0 !important;
   overflow-x: auto;
 }
 
-.code-block-wrapper pre code {
+.code-block-wrapper pre code,
+.code-block-wrapper pre code.hljs {
   font-family: var(--font-mono) !important;
   font-variant-ligatures: none;
-  font-size: 8.75pt !important;
+  font-size: 9pt !important;
   font-weight: 400 !important;
   line-height: 1.58 !important;
   background: transparent !important;
-  color: #e5e7eb !important;
+  color: #d4d4d4 !important;
   padding: 0 !important;
   display: block;
+}
+
+/* VS Code Dark+ / Dark Modern Token Colors */
+.code-block-wrapper .hljs-comment,
+.code-block-wrapper .hljs-quote {
+  color: #6a9955 !important;
+  font-style: normal !important;
+}
+
+/* Control-flow keywords: from, import, if, not, or, return, raise, await... */
+.code-block-wrapper .hljs-kw-control,
+.code-block-wrapper .hljs-doctag {
+  color: #c586c0 !important;
+}
+
+/* Declaration & storage keywords: def, class, None, True, False, const, function, SQL... */
+.code-block-wrapper .hljs-keyword,
+.code-block-wrapper .hljs-literal,
+.code-block-wrapper .hljs-name,
+.code-block-wrapper .hljs-selector-tag {
+  color: #569cd6 !important;
+}
+
+/* HTML/XML angle brackets < > </ */
+.code-block-wrapper .hljs-tag {
+  color: #808080 !important;
+}
+
+/* Types, classes, interfaces, builtin types: BaseModel, str, datetime, UUID... */
+.code-block-wrapper .hljs-type,
+.code-block-wrapper .hljs-title.class_,
+.code-block-wrapper .hljs-title.class_.inherited__,
+.code-block-wrapper .hljs-built_in {
+  color: #4ec9b0 !important;
+}
+
+/* Functions, methods, decorators: def apply_payment_result, @router.post... */
+.code-block-wrapper .hljs-title,
+.code-block-wrapper .hljs-title.function_,
+.code-block-wrapper .hljs-function .hljs-title,
+.code-block-wrapper .hljs-meta,
+.code-block-wrapper .hljs-meta .hljs-keyword {
+  color: #dcdcaa !important;
+}
+
+/* Attributes, JSON keys, parameters, variables: value=, class=, prefix=, token... */
+.code-block-wrapper .hljs-attr,
+.code-block-wrapper .hljs-attribute,
+.code-block-wrapper .hljs-variable,
+.code-block-wrapper .hljs-template-variable,
+.code-block-wrapper .hljs-params,
+.code-block-wrapper .hljs-property {
+  color: #9cdcfe !important;
+}
+
+/* Strings: "/internal/v1", "SUCCESS", "margin-normal"... */
+.code-block-wrapper .hljs-string,
+.code-block-wrapper .hljs-regexp,
+.code-block-wrapper .hljs-addition,
+.code-block-wrapper .hljs-meta .hljs-string {
+  color: #ce9178 !important;
+}
+
+/* Numbers: 401, 1024, 250... */
+.code-block-wrapper .hljs-number {
+  color: #b5cea8 !important;
+}
+
+/* Operators & punctuation */
+.code-block-wrapper .hljs-operator,
+.code-block-wrapper .hljs-punctuation {
+  color: #d4d4d4 !important;
 }
 
 /* Inline code style (ChatGPT soft pill) */
@@ -1305,17 +1379,18 @@ body.is-resizing textarea {
 }
 
 .theme-dark .sheet-page .code-block-wrapper {
-  background-color: #131824;
-  border-color: #334155;
+  background-color: #1e1e1e;
+  border-color: #3c3c3c;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
 }
 
 .theme-dark .sheet-page .code-block-header {
-  background-color: #273246;
-  border-bottom-color: #334155;
+  background-color: #252526;
+  border-bottom-color: #3c3c3c;
 }
 
 .theme-dark .sheet-page .code-block-wrapper pre {
-  background-color: #131824 !important;
+  background-color: #1e1e1e !important;
 }
 
 .theme-dark .sheet-page blockquote {
