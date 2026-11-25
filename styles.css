@@ -29,7 +29,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: var(--font-sans);
   background-color: var(--bg-app);
@@ -87,7 +88,9 @@ html, body {
   flex-shrink: 0;
 }
 
-.header-left, .header-center, .header-right {
+.header-left,
+.header-center,
+.header-right {
   display: flex;
   align-items: center;
   gap: 0.38rem;
@@ -187,7 +190,8 @@ html, body {
   white-space: nowrap;
 }
 
-.btn-select:hover, .btn-select:focus {
+.btn-select:hover,
+.btn-select:focus {
   border-color: var(--accent);
 }
 
@@ -324,6 +328,7 @@ body.is-resizing textarea {
 .studio-workspace.layout-editor .pane-resizer {
   display: none;
 }
+
 .studio-workspace.layout-editor .editor-pane {
   flex: 1 1 auto !important;
   max-width: none !important;
@@ -537,12 +542,29 @@ body.is-resizing textarea {
   flex-shrink: 0;
 }
 
-.dot-js { background-color: #f7df1e; }
-.dot-json { background-color: #f59e0b; }
-.dot-bash { background-color: #10b981; }
-.dot-sql { background-color: #38bdf8; }
-.dot-py { background-color: #3b82f6; }
-.dot-mermaid { background-color: #a855f7; }
+.dot-js {
+  background-color: #f7df1e;
+}
+
+.dot-json {
+  background-color: #f59e0b;
+}
+
+.dot-bash {
+  background-color: #10b981;
+}
+
+.dot-sql {
+  background-color: #38bdf8;
+}
+
+.dot-py {
+  background-color: #3b82f6;
+}
+
+.dot-mermaid {
+  background-color: #a855f7;
+}
 
 .stats-badge {
   font-size: 0.74rem;
@@ -833,24 +855,30 @@ body.is-resizing textarea {
 
 /* Code Content */
 .code-block-wrapper pre {
+  --code-font-size: 8.6pt;
   margin: 0 !important;
-  padding: 1rem 1.15rem !important;
+  padding: 0.85rem 1rem !important;
   background-color: #1e1e1e !important;
   border-radius: 0 !important;
-  overflow-x: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
 }
 
 .code-block-wrapper pre code,
 .code-block-wrapper pre code.hljs {
   font-family: var(--font-mono) !important;
   font-variant-ligatures: none;
-  font-size: 9pt !important;
+  font-size: var(--code-font-size, 8.6pt) !important;
   font-weight: 400 !important;
-  line-height: 1.58 !important;
+  line-height: 1.55 !important;
   background: transparent !important;
   color: #d4d4d4 !important;
   padding: 0 !important;
   display: block;
+  white-space: inherit !important;
+  tab-size: 2;
 }
 
 /* VS Code Dark+ / Dark Modern Token Colors */
@@ -925,10 +953,25 @@ body.is-resizing textarea {
   color: #d4d4d4 !important;
 }
 
-/* Inline code style (ChatGPT soft pill) */
-.sheet-page :not(pre) > code {
+/* Plaintext & Directory Tree Tokens (VS Code Explorer style) */
+.code-block-wrapper .hljs-tree-branch {
+  color: #808080 !important;
+}
+
+.code-block-wrapper .hljs-tree-folder {
+  color: #9cdcfe !important;
+  font-weight: 500;
+}
+
+.code-block-wrapper .hljs-tree-file {
+  color: #d4d4d4 !important;
+}
+
+/* Inline code style (ChatGPT soft pill, always upright even inside italic blockquotes) */
+.sheet-page :not(pre)>code {
   font-family: var(--font-mono);
   font-variant-ligatures: none;
+  font-style: normal;
   font-size: 0.875em;
   font-weight: 500;
   background-color: #ececec;
@@ -994,11 +1037,11 @@ body.is-resizing textarea {
    TYPOGRAPHY & CONTENT ELEMENTS
    ======================================================== */
 
-.sheet-page h1, 
-.sheet-page h2, 
-.sheet-page h3, 
-.sheet-page h4, 
-.sheet-page h5, 
+.sheet-page h1,
+.sheet-page h2,
+.sheet-page h3,
+.sheet-page h4,
+.sheet-page h5,
 .sheet-page h6 {
   page-break-after: avoid;
   break-after: avoid;
@@ -1012,7 +1055,7 @@ body.is-resizing textarea {
   font-size: 10.5pt;
 }
 
-.sheet-page ul, 
+.sheet-page ul,
 .sheet-page ol {
   margin-bottom: 1.2em;
   padding-left: 1.6em;
@@ -1030,7 +1073,7 @@ body.is-resizing textarea {
   padding-left: 0.4em;
 }
 
-.sheet-page li > input[type="checkbox"] {
+.sheet-page li>input[type="checkbox"] {
   margin-right: 0.5rem;
   accent-color: #4f46e5;
   transform: scale(1.08);
@@ -1131,7 +1174,7 @@ body.is-resizing textarea {
   break-inside: avoid;
 }
 
-.sheet-page th, 
+.sheet-page th,
 .sheet-page td {
   padding: 0.6em 0.85em;
   border: 1px solid #e2e8f0;
@@ -1246,6 +1289,12 @@ body.is-resizing textarea {
   text-decoration: underline;
 }
 
+.theme-executive .sheet-page blockquote {
+  border-left-color: #0f172a;
+  background-color: #f8fafc;
+  color: #334155;
+}
+
 /* ========================================================
    THEME 3: ACADEMIC JOURNAL
    ======================================================== */
@@ -1275,14 +1324,26 @@ body.is-resizing textarea {
   margin-bottom: 0.4em;
 }
 
-.theme-academic .sheet-page > p {
+.theme-academic .sheet-page>p {
   text-align: justify;
   margin-bottom: 0.85em;
   line-height: 1.75;
 }
 
-.theme-academic .sheet-page > p + p {
+.theme-academic .sheet-page>p+p {
   text-indent: 1.5em;
+}
+
+.theme-academic .sheet-page blockquote {
+  border-left: 3px solid #374151;
+  background-color: #f9fafb;
+  color: #374151;
+}
+
+.theme-academic .sheet-page th {
+  background-color: #f3f4f6;
+  border-top: 2px solid #111827;
+  border-bottom: 2px solid #111827;
 }
 
 /* ========================================================
@@ -1373,7 +1434,7 @@ body.is-resizing textarea {
   background-color: #334155;
 }
 
-.theme-dark .sheet-page :not(pre) > code {
+.theme-dark .sheet-page :not(pre)>code {
   background-color: #334155;
   color: #f1f5f9;
 }
@@ -1480,6 +1541,7 @@ body.is-resizing textarea {
    ======================================================== */
 
 @media (max-width: 1280px) {
+
   .item-label span,
   .hide-md {
     display: none;
@@ -1496,14 +1558,17 @@ body.is-resizing textarea {
   .studio-workspace.layout-split {
     flex-direction: column;
   }
+
   .studio-workspace.layout-split .editor-pane {
     flex: 0 0 45% !important;
     max-width: 100% !important;
     border-bottom: 1px solid var(--border-color);
   }
+
   .studio-workspace.layout-split .pane-resizer {
     display: none;
   }
+
   .floating-fab {
     display: flex;
   }
@@ -1514,8 +1579,11 @@ body.is-resizing textarea {
    ======================================================== */
 
 @media print {
+
   /* Reset all background and layouts */
-  html, body, .app-shell {
+  html,
+  body,
+  .app-shell {
     background: #ffffff !important;
     color: #000000 !important;
     height: auto !important;
@@ -1586,12 +1654,22 @@ body.is-resizing textarea {
   }
 
   /* Prevent awkward page cuts */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
 
-  table, .callout, blockquote, .code-block-wrapper, .mermaid-block, .katex-display {
+  table,
+  .callout,
+  blockquote,
+  .code-block-wrapper,
+  .mermaid-block,
+  .katex-display {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }

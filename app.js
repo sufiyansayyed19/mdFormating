@@ -55,37 +55,37 @@ document.addEventListener('DOMContentLoaded', () => {
       htmlLabels: false,
       themeVariables: isDark
         ? {
-            darkMode: true,
-            background: '#242f42',
-            fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            fontSize: '13px',
-            primaryColor: '#334155',
-            primaryBorderColor: '#64748b',
-            primaryTextColor: '#f8fafc',
-            secondaryColor: '#293548',
-            tertiaryColor: '#1e293b',
-            lineColor: '#94a3b8',
-            textColor: '#e2e8f0',
-            noteBkgColor: '#2d3a50',
-            noteTextColor: '#f1f5f9',
-            noteBorderColor: '#64748b',
-            actorBkg: '#334155',
-            actorBorder: '#64748b',
-            actorTextColor: '#f8fafc',
-            actorLineColor: '#64748b',
-            signalColor: '#cbd5e1',
-            signalTextColor: '#f1f5f9',
-            labelBoxBkgColor: '#293548',
-            labelBoxBorderColor: '#64748b',
-            labelTextColor: '#f1f5f9',
-            loopTextColor: '#cbd5e1',
-            activationBkgColor: '#334155',
-            activationBorderColor: '#818cf8'
-          }
+          darkMode: true,
+          background: '#242f42',
+          fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          fontSize: '13px',
+          primaryColor: '#334155',
+          primaryBorderColor: '#64748b',
+          primaryTextColor: '#f8fafc',
+          secondaryColor: '#293548',
+          tertiaryColor: '#1e293b',
+          lineColor: '#94a3b8',
+          textColor: '#e2e8f0',
+          noteBkgColor: '#2d3a50',
+          noteTextColor: '#f1f5f9',
+          noteBorderColor: '#64748b',
+          actorBkg: '#334155',
+          actorBorder: '#64748b',
+          actorTextColor: '#f8fafc',
+          actorLineColor: '#64748b',
+          signalColor: '#cbd5e1',
+          signalTextColor: '#f1f5f9',
+          labelBoxBkgColor: '#293548',
+          labelBoxBorderColor: '#64748b',
+          labelTextColor: '#f1f5f9',
+          loopTextColor: '#cbd5e1',
+          activationBkgColor: '#334155',
+          activationBorderColor: '#818cf8'
+        }
         : {
-            fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            fontSize: '13px'
-          },
+          fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          fontSize: '13px'
+        },
       flowchart: { htmlLabels: false, useMaxWidth: true },
       sequence: { useMaxWidth: true, wrap: false },
       state: { useMaxWidth: true }
@@ -141,27 +141,94 @@ document.addEventListener('DOMContentLoaded', () => {
     'switch', 'case', 'not', 'or', 'and', 'assert'
   ]);
 
-  function applyVsCodeTokenRefinements(html) {
+  // Languages that should receive PascalCase class/type token coloring
+  const CODE_TYPED_LANGS = new Set([
+    'python', 'py', 'typescript', 'ts', 'javascript', 'js',
+    'java', 'c', 'cpp', 'go', 'rust', 'csharp', 'cs'
+  ]);
+
+  const PLAIN_TEXT_LANGS = new Set([
+    'text', 'plaintext', 'txt', 'tree', 'ascii', 'dir', 'log'
+  ]);
+
+  function applyVsCodeTokenRefinements(html, rawLang) {
     // 1. Split control-flow keywords (#c586c0) from declaration keywords (#569cd6)
     let refined = html.replace(
       /<span class="hljs-keyword">([a-zA-Z_]+)<\/span>/g,
       (full, kw) => VSCODE_CONTROL_KEYWORDS.has(kw) ? `<span class="hljs-kw-control">${kw}</span>` : full
     );
 
-    // 2. Highlight un-wrapped PascalCase classes/types & builtin type hints in teal (#4ec9b0),
-    //    skipping any existing <span ...>...</span> tokens (strings, comments, etc.)
-    refined = refined.replace(
-      /(<span\b[^>]*>[\s\S]*?<\/span>)|\b([A-Z][a-zA-Z0-9_]*[a-z][a-zA-Z0-9_]*|UUID|str|int|float|bool|dict|list|tuple|set|bytes|datetime|Callable|Any|Optional|Union|Literal)\b/g,
-      (match, existingSpan, typeName) => existingSpan ? existingSpan : `<span class="hljs-type">${typeName}</span>`
-    );
+    // 2. Highlight un-wrapped PascalCase classes/types & builtin type hints in teal (#4ec9b0)
+    //    only on programming languages (never on text, markdown, json, bash, yaml, html, css)
+    if (CODE_TYPED_LANGS.has(rawLang)) {
+      refined = refined.replace(
+        /(<span\b[^>]*>[\s\S]*?<\/span>)|\b([A-Z][a-zA-Z0-9_]*[a-z][a-zA-Z0-9_]*|UUID|str|int|float|bool|dict|list|tuple|set|bytes|datetime|Callable|Any|Optional|Union|Literal)\b/g,
+        (match, existingSpan, typeName) => existingSpan ? existingSpan : `<span class="hljs-type">${typeName}</span>`
+      );
+    }
 
     return refined;
+  }
+
+  // Dedicated formatter for text / directory-tree blocks (never miscolors English words as code classes)
+  function highlightPlainTextOrTree(codeText) {
+    const isTree = /[├└│─]/.test(codeText);
+    return codeText.split(/\r?\n/).map(line => {
+      // Full-line comment
+      if (/^\s*#\s/.test(line)) {
+        return `<span class="hljs-comment">${escapeHtml(line)}</span>`;
+      }
+
+      // Split trailing inline comment (# ... or // ...)
+      let mainPart = line;
+      let commentPart = '';
+      const commentMatch = line.match(/^([\s\S]*?)(\s+#\s+.*|\/#\s+.*|\s+\/\/\s+.*)$/);
+      if (commentMatch) {
+        if (commentMatch[2].startsWith('/#')) {
+          mainPart = commentMatch[1] + '/';
+          commentPart = commentMatch[2].slice(1);
+        } else {
+          mainPart = commentMatch[1];
+          commentPart = commentMatch[2];
+        }
+      }
+
+      let formattedMain = '';
+      if (isTree) {
+        // Highlight tree branches, folder names (ending in /), and filenames cleanly
+        formattedMain = escapeHtml(mainPart)
+          .replace(/([├└│─┬┼]+|--+|\|\s*)/g, '<span class="hljs-tree-branch">$1</span>')
+          .replace(/([A-Za-z0-9_.\-]+\/)/g, '<span class="hljs-tree-folder">$1</span>');
+      } else {
+        formattedMain = escapeHtml(mainPart);
+      }
+
+      const formattedComment = commentPart
+        ? `<span class="hljs-comment">${escapeHtml(commentPart)}</span>`
+        : '';
+
+      return formattedMain + formattedComment;
+    }).join('\n');
+  }
+
+  // Compute an auto-fitted font size (in pt) so wide lines (80-125 chars, like directory trees)
+  // stay on a single line in BOTH Live Preview and Print/PDF without wrapping to the next line.
+  function computeCodeFontSizePt(codeText) {
+    const lines = codeText.split(/\r?\n/);
+    let maxLen = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const expandedLen = lines[i].replace(/\t/g, '  ').length;
+      if (expandedLen > maxLen) maxLen = expandedLen;
+    }
+    if (maxLen <= 80) return 8.6;
+    // Scale down smoothly between 8.6pt (80 chars) and 5.5pt (~125 chars)
+    return Math.max(5.5, Math.min(8.6, +(700 / maxLen).toFixed(2)));
   }
 
   // Configure Custom Marked Renderer (Mermaid Diagrams + ChatGPT Code Blocks)
   const renderer = new marked.Renderer();
 
-  renderer.code = function(token, language) {
+  renderer.code = function (token, language) {
     let codeText = '';
     let lang = '';
 
@@ -186,18 +253,23 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    const langLabel = LANG_LABELS[rawLang] || (rawLang || 'code');
+    const isPlainOrTree = PLAIN_TEXT_LANGS.has(rawLang) || (!rawLang && /[├└│─]/.test(codeText));
+    const langLabel = isPlainOrTree ? (rawLang || 'text') : (LANG_LABELS[rawLang] || (rawLang || 'code'));
+    const codeFontPt = computeCodeFontSizePt(codeText);
 
     let highlighted = '';
     try {
-      if (rawLang && window.hljs && window.hljs.getLanguage(rawLang)) {
+      if (isPlainOrTree) {
+        highlighted = highlightPlainTextOrTree(codeText);
+      } else if (rawLang && window.hljs && window.hljs.getLanguage(rawLang)) {
         highlighted = window.hljs.highlight(codeText, { language: rawLang }).value;
+        highlighted = applyVsCodeTokenRefinements(highlighted, rawLang);
       } else if (window.hljs) {
-        highlighted = window.hljs.highlightAuto(codeText).value;
+        const autoRes = window.hljs.highlightAuto(codeText);
+        highlighted = applyVsCodeTokenRefinements(autoRes.value, autoRes.language || '');
       } else {
         highlighted = escapeHtml(codeText);
       }
-      highlighted = applyVsCodeTokenRefinements(highlighted);
     } catch (err) {
       console.warn('Highlight.js notice:', err);
       highlighted = escapeHtml(codeText);
@@ -215,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
           </div>
         </div>
-        <pre><code class="hljs language-${escapeHtml(rawLang || 'plaintext')}">${highlighted}</code></pre>
+        <pre style="--code-font-size: ${codeFontPt}pt"><code class="hljs language-${escapeHtml(rawLang || 'plaintext')}">${highlighted}</code></pre>
       </div>
     `;
   };
@@ -264,10 +336,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Callouts: [!NOTE], [!TIP], [!WARNING], [!CAUTION]
   const CALLOUT_META = {
-    NOTE:    { cls: 'note',    icon: 'info',           label: 'Note' },
-    TIP:     { cls: 'tip',     icon: 'lightbulb',      label: 'Tip' },
+    NOTE: { cls: 'note', icon: 'info', label: 'Note' },
+    TIP: { cls: 'tip', icon: 'lightbulb', label: 'Tip' },
     WARNING: { cls: 'warning', icon: 'alert-triangle', label: 'Warning' },
-    CAUTION: { cls: 'caution', icon: 'octagon-alert',  label: 'Caution' }
+    CAUTION: { cls: 'caution', icon: 'octagon-alert', label: 'Caution' }
   };
 
   function processCallouts(html) {
@@ -454,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
               button.innerHTML = '<i data-lucide="copy"></i> Copy code';
               if (window.lucide) window.lucide.createIcons();
             }, 1800);
-          }).catch(() => {});
+          }).catch(() => { });
         }
       });
     });
